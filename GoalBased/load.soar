@@ -1,0 +1,17 @@
+##!
+# @file: 
+#
+# @created timothysaucer 20190211
+
+source "../new-goal-system-4/load.soar"
+
+CORE_Source variables.soar
+CORE_Source goal-types.soar
+CORE_Source output-command-types.soar
+
+CORE_Source main-agent.soar
+CORE_Source tank-status.soar
+
+CORE_Source search.soar
+CORE_Source engage-enemy.soar
+CORE_Source run-away.soar

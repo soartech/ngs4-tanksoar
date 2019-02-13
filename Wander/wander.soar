@@ -1,0 +1,67 @@
+##!
+# @file
+#
+# @created timothysaucer 20190211
+
+# NOTE: This is NOT the recommended way to use NGS-4. Creation of atomic operators
+# is almost done exclusively by the internal macros. This example is to primarily show
+# how to use the syntax of NGS-4. For a full example of the recommended way to build
+# this agent, please look at simple-bot.
+
+# The below functions are designed to mimic the wander agent provided by the Soar tutorial.
+
+sp "propose*move
+    [ngs-match-top-state <s> "" <il>]
+    [ngs-bind <il> blocked.forward:no]
+-->
+    [ngs-create-atomic-operator <s> move <o>]
+    [ngs-create-attribute <o> actions.move.direction forward]
+    "
+
+sp "propose*turn
+    [ngs-match-top-state <s> "" <il>]
+    [ngs-bind <il> blocked.forward:yes]
+    [ngs-eq <blocked> "{[ngs-anyof left right] <dir>}" no]
+-->
+    [ngs-create-atomic-operator <s> turn <o>]
+    [ngs-create-attribute <o> actions <actions>]
+    [ngs-create-attribute <actions> rotate.direction <dir>]
+    [ngs-create-attribute <actions> radar.switch on]
+    [ngs-create-attribute <actions> radar-power.setting 13]
+    "
+
+sp "propose*turn*backward
+    [ngs-match-top-state <s> "" <il>]
+    [ngs-bind <il> blocked]
+    [ngs-bind <blocked> forward:yes left:yes right:yes]
+-->
+    [ngs-create-atomic-operator <s> turn <o>]
+    [ngs-create-attribute <o> actions.rotate.direction left]
+    "
+
+sp "propose*radar-off
+    [ngs-match-top-state <s> "" <il>]
+    [ngs-bind <il> radar-status:on radar-settings:<>:0 radar]
+    [ngs-not [ngs-eq <radar> "{[ngs-anyof energy health missiles tank]}" <any>]]
+-->
+    [ngs-create-atomic-operator <s> radar-off <o> >]
+    [ngs-create-attribute <o> actions.radar.switch off]
+    "
+
+# Note: Again, this is not the intended use of NGS. Please the the complete example.
+
+sp "apply*operator*create-action-command
+    [ngs-match-selected-operator <s> <o>]
+    [ngs-output-link <s> <ol>]
+    [ngs-bind <o> actions.<att>:<value>]
+-->
+    [ngs-create-attribute <ol> <att> <value>]
+    "
+
+sp "apply*operator*remove-command
+    [ngs-match-selected-operator <s> <o>]
+    [ngs-output-link <s> <ol> <att>:<value>.status:complete]
+    [ngs-bind <o> actions]
+-->
+    [ngs-remove-attribute <ol> <att> <value>]
+    "

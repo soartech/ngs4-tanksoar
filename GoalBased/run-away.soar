@@ -1,0 +1,125 @@
+##!
+# @file
+#
+# @created timothysaucer 20190213
+
+# A different (probably better) way to do this is to create separate 
+# AchieveRunAway goals for each case and then arbitrate at the decision stage
+# which one to go with. Here we're trying to show a design pattern that is 
+# sometimes useful in real applications.
+
+################################################################################
+#  Identify if we need to run away. Do it by creating a bunch of tags and then
+#  if any of those exist create a single goal to run away.
+################################################################################
+
+sp "elaborate*run-away*from-sound
+    [ngs-match-top-state <s> tank-soar <il>]
+    [ngs-or [ngs-is-tagged <tank-soar> $TS_MUST_RECHARGE] \
+            [ngs-is-not-tagged <tank-soar> $TS_CAN_ENGAGE]]
+    [ngs-bind <il> sound.<direction>:<>:silent]
+-->
+    [ngs-tag <tank-soar> run-from-sound]"
+
+# We could have just used the missiles-energy-low approach in the tutorial, but
+# this setup of breaking the two apart allows expansion to more nuanced behavior
+# if we so desire.
+sp "elaborate*run-away*from-tank-on-radar
+    [ngs-match-top-state <s> tank-soar <il>]
+    [ngs-or [ngs-is-tagged <tank-soar> $TS_MUST_RECHARGE] \
+            [ngs-is-not-tagged <tank-soar> $TS_CAN_ENGAGE]]
+    [ngs-bind <il> radar.tank]
+-->
+    [ngs-tag <tank-soar> run-from-tank-on-radar]"
+
+sp "elaborate*run-away*from-tank-on-radar
+    [ngs-match-top-state <s> tank-soar]
+    [ngs-or [ngs-is-tagged <tank-soar> $TS_MUST_RECHARGE] \
+            [ngs-is-not-tagged <tank-soar> $TS_CAN_ENGAGE]]
+    [ngs-is-tagged <tank-soar> $TS_IN_DANGER]
+-->
+    [ngs-tag <tank-soar> run-from-missile]"
+
+################################################################################
+#  Create goal to run away from any of the previous conditions
+################################################################################
+
+# Why not just use an ngs-anyof? We don't want to match more than once.
+sp "goal-run-away*create
+    [ngs-match-goal-to-create-subgoal <s> $TS_DECISION_MANEUVER <supergoal> AchieveRunAway <goalpool>]
+    [ngs-bind <s> tank-soar]
+    [ngs-or [ngs-is-tagged <tank-soar> run-from-sound] \
+            [ngs-is-tagged <tank-soar> run-from-tank-on-radar] \
+            [ngs-is-tagged <tank-soar> run-from-missile]]
+-->
+    [ngs-create-goal-in-place <goalpool> AchieveRunAway $NGS_GB_ACHIEVE <g> <supergoal>]"
+
+################################################################################
+#  Elaborate direction to run
+################################################################################
+
+sp "run-away*direction*from-sound
+    [ngs-match-goal <s> AchieveRunAway <g>]
+    [ngs-input-link <s> <il>]
+    [ngs-neq <il> sound silent <dir>]
+-->
+    [ngs-create-attribute <g> from-direction <dir>]"
+
+sp "run-away*direction*from-tank-on-radar
+    [ngs-match-goal <s> AchieveRunAway <g>]
+    [ngs-bind <s> tank-soar]
+    [ngs-is-tagged <tank-soar> run-from-tank-on-radar]
+-->
+    [ngs-create-attribute <g> from-direction forward]"
+
+sp "run-away*direction*from-incoming
+    [ngs-match-goal <s> AchieveRunAway <g>]
+    [ngs-bind <s> tank-soar.incoming-direction:<dir>]
+-->
+    [ngs-create-attribute <g> from-direction <dir>]"
+
+sp "run-away*direction*avoid
+    [ngs-match-goal <s> AchieveRunAway <g>]
+    [ngs-input-link <s> <il> radar.tank]
+    [ngs-neq <tank> position center <dir>]
+-->
+    [ngs-create-attribute <g> avoid-direction <dir>]"
+
+################################################################################
+#  Elaborate the possible side directions
+################################################################################
+
+sp "top-state*side-directions
+    [ngs-match-top-state <s> tank-soar]
+-->
+    [ngs-create-attribute <tank-soar> side-direction <sd>]
+    [ngs-create-attribute <sd> forward  right left]
+    [ngs-create-attribute <sd> backward right left]
+    [ngs-create-attribute <sd> right forward backward]
+    [ngs-create-attribute <sd> left  forward backward]"
+
+################################################################################
+#  Create the output command
+################################################################################
+
+sp "run-away*create-output-command
+    [ngs-match-goal <s> AchieveRunAway <g>]
+    [ngs-bind <g> from-direction]
+    [ngs-bind <s> tank-soar.side-direction.<from-direction>:<to-direction>]
+    [ngs-neq <g> avoid-direction <to-direction>]
+-->
+    [ngs-create-typed-object <g> output-command OutputCommand <cmd> "move <move>"]
+    [ngs-create-attribute <move> direction <to-direction>]"
+    
+################################################################################
+#         Once we have an output command, assign the goal to the decision
+################################################################################
+
+# See note in engage-enemy.soar
+
+sp "run-away*assign-decision
+    [ngs-match-goal <s> AchieveRunAway <g>]
+    [ngs-bind <g> output-command]
+-->
+    [ngs-assign-decision <g> $TS_DECISION_MANEUVER]"
+

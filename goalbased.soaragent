@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soaragent>
+  <startfile path="GoalBased/load.soar" />
+  <members>
+    <member path="" />
+    <member path="new-goal-system-4" />
+    <member path="new-goal-system-4/ngs-4_0_0" />
+    <member path="new-goal-system-4/ngs-4_0_0/behavior-explanation" />
+    <member path="new-goal-system-4/ngs-4_0_0/_core" />
+    <member path="new-goal-system-4/ngs-4_0_0/context-variables" />
+    <member path="new-goal-system-4/ngs-4_0_0/macros" />
+    <member path="GoalBased" />
+  </members>
+</soaragent>
+

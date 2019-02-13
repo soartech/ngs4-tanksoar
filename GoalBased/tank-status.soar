@@ -1,0 +1,29 @@
+##!
+# @file
+#
+# @created timothysaucer 20190212
+
+sp "identify*self-in-danger
+    [ngs-match-top-state <s> tank-soar <il>]
+    [ngs-bind <il> incoming.<dir>:yes]
+-->
+    [ngs-create-attribute <tank-soar> incoming-direction <dir>]
+    [ngs-tag <tank-soar> $TS_IN_DANGER]"
+
+sp "identify*can-engage
+    [ngs-match-top-state <s> tank-soar <il>]
+    [ngs-bind <il> missiles:>:0]
+-->
+    [ngs-tag <tank-soar> $TS_CAN_ENGAGE]"
+
+sp "identify*must-recharge
+    [ngs-match-top-state <s> tank-soar <il>]
+    [ngs-bind <il> energy:<:200]
+-->
+    [ngs-tag <tank-soar> $TS_MUST_RECHARGE]"
+
+sp "mark-threat
+    [ngs-match-top-state <s> tank-soar <il>]
+    [ngs-bind <il> radar.tank]
+-->
+    [ngs-create-attribute <tank-soar> threat <tank>]"

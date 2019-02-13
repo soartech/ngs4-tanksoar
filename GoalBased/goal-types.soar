@@ -1,0 +1,26 @@
+##!
+# @file: 
+#
+# @created timothysaucer 20190211
+
+
+NGS_DeclareGoal AchieveWinTankSoar {
+}
+
+NGS_DeclareGoal AchieveManeuver {
+}
+
+NGS_DeclareGoal AchieveSearch {
+    type AchieveManeuver
+}
+
+NGS_DeclareGoal AchieveEngageEnemy {
+    type AchieveManeuver
+}
+
+NGS_DeclareGoal AchieveRunAway {
+    type AchieveManeuver
+}
+
+NGS_DeclareGoal AchieveTurnDirection {
+}

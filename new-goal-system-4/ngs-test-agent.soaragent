@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soaragent>
+  <startfile path="load.soar" />
+  <members>
+    <member path="" />
+    <member path="ngs-4_0_0/_core" />
+    <member path="ngs-4_0_0/context-variables/context-variables.tcl" />
+    <member path="ngs-4_0_0/context-variables/load.soar" />
+    <member path="ngs-4_0_0/context-variables/stable-value.tcl" />
+    <member path="ngs-4_0_0/load.soar" />
+    <member path="ngs-4_0_0/ngs-achieved-goal-applications.soar" />
+    <member path="ngs-4_0_0/ngs-def-elaborations.soar" />
+    <member path="ngs-4_0_0/ngs-def-preferences.soar" />
+    <member path="ngs-4_0_0/ngs-goal-declarations.tcl" />
+    <member path="ngs-4_0_0/ngs-object-creation-applications.soar" />
+    <member path="ngs-4_0_0/ngs-output-handling.soar" />
+    <member path="ngs-4_0_0/ngs-removal-applications.soar" />
+    <member path="ngs-4_0_0/ngs-side-effects.soar" />
+    <member path="ngs-4_0_0/ngs-standard-time-elaborations.soar" />
+    <member path="ngs-4_0_0/ngs-sub-state-management.soar" />
+    <member path="ngs-4_0_0/macros/debug.tcl" />
+    <member path="ngs-4_0_0/macros/lhs-fragments.tcl" />
+    <member path="ngs-4_0_0/macros/load.soar" />
+    <member path="ngs-4_0_0/macros/ngs-production-template.tcl" />
+    <member path="ngs-4_0_0/macros/ngs-variables.tcl" />
+    <member path="ngs-4_0_0/macros/rhs-fragments.tcl" />
+    <member path="ngs-4_0_0/macros/stor.tcl" />
+    <member path="ngs-4_0_0/macros/type-declarations.tcl" />
+    <member path="ngs-4_0_0/macros/typeinfo.tcl" />
+    <member path="ngs-4_0_0/tests/common.soar" />
+    <member path="ngs-4_0_0/tests/helpers.tcl" />
+  </members>
+</soaragent>
+

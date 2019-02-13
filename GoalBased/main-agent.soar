@@ -1,0 +1,84 @@
+##!
+# @file
+#
+# @created timothysaucer 20190211
+
+################################################################################
+#         Main data structure
+################################################################################
+
+sp "tank-soar*create
+    [ngs-match-top-state <s>]
+-->
+    [ngs-create-attribute <s> tank-soar <tank-soar>]"
+
+################################################################################
+#         For now we have one goal heirarchy (win the game!)
+################################################################################
+
+sp "win-game*top-level-goal
+    [ngs-match-goalpool <s> <pool> AchieveWinTankSoar]
+-->
+    [ngs-create-goal-in-place <pool> AchieveWinTankSoar $NGS_GB_ACHIEVE <g>]"
+
+################################################################################
+#         The top level decision is what maneuver to do
+################################################################################
+
+sp "maneuver-decision
+    [ngs-match-goal <s> AchieveWinTankSoar <g>]
+-->
+    [ngs-irequest-decision <g> $TS_DECISION_MANEUVER <g> maneuver]"
+
+################################################################################
+#         Select the best ranked choice if more than one exists
+################################################################################
+
+# We're assuming this is 1-on-1 combat. For multiple tank scenarios we need to
+# make sure we don't have multiple goals (you might have two AchieveEngageEnemy
+# goals simultaneously and the below productions wouldn't know how to make the
+# right decision about which one to choose.
+
+# There are better ways to do this - you could create a ranking of options to 
+# make the selection productions generic.
+
+# Alternately you could add some context in. For example, if you know you are
+# far from the nearest recharge station and you're low on energy, maybe you
+# choose to run away earlier than when you are actually at the low-energy
+# threshold. In another context where you know you can recharge easily maybe
+# you choose to remain engaged longer.
+sp "maneuver-decision*select-run-away
+    [ngs-match-to-make-choice <ss> $TS_DECISION_MANEUVER <g> AchieveWinTankSoar "" <s>]
+    [ngs-is-decision-choice <ss> <g-run-away> AchieveRunAway]
+-->
+    [ngs-make-choice-by-operator <ss> <g-run-away>]"
+
+sp "maneuver-decision*select-engage
+    [ngs-match-to-make-choice <ss> $TS_DECISION_MANEUVER <g> AchieveWinTankSoar "" <s>]
+    [ngs-not [ngs-is-decision-choice <ss> <g-run-away> AchieveRunAway]]
+    [ngs-is-decision-choice <ss> <g-engage> AchieveEngageEnemy]
+-->
+    [ngs-make-choice-by-operator <ss> <g-engage>]"
+
+################################################################################
+#         Copy the selected output command to the output link
+################################################################################
+
+sp "create-output
+    [ngs-match-selected-goal <s> AchieveManeuver <g>]
+    [ngs-bind <g> output-command.<attr>:<value>]
+    [ngs-output-link <s> <ol>]
+    [ngs-not [ngs-bind <ol> <attr>:<value>]]
+-->
+    [ngs-create-attribute-by-operator <s> <ol> <attr> <value>]"
+
+################################################################################
+#         Remove the command once it is complete
+################################################################################
+
+sp "remove-output*status-complete
+    [ngs-match-top-state <s> "" "" <ol>]
+    [ngs-bind <ol> <attr>:<value>.status:complete]
+-->
+    [ngs-remove-attribute-by-operator <s> <ol> <attr> <value>]"
+    

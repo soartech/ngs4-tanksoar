@@ -1,0 +1,11 @@
+##!
+# @file: 
+#
+# @created timothysaucer 20190211
+
+CORE_CreateMacroVar TS_DECISION_MANEUVER        maneuver-decision
+CORE_CreateMacroVar TS_DECISION_TURN_DIRECTION  turn-direction-decision
+
+CORE_CreateMacroVar TS_IN_DANGER                self-in-danger
+CORE_CreateMacroVar TS_CAN_ENGAGE               can-engage
+CORE_CreateMacroVar TS_MUST_RECHARGE            must-recharge

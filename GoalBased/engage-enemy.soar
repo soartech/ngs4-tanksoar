@@ -1,0 +1,82 @@
+##!
+# @file
+#
+# @created timothysaucer 20190212
+
+################################################################################
+#         If there exists a threat, try to engage if able
+################################################################################
+
+sp "goal-engage*create
+    [ngs-match-goal-to-create-subgoal <s> $TS_DECISION_MANEUVER <supergoal> AchieveEngageEnemy <goalpool>]
+    [ngs-bind <s> tank-soar.threat]
+    [ngs-is-tagged <tank-soar> $TS_CAN_ENGAGE]
+    [ngs-is-not-tagged <tank-soar> $TS_MUST_RECHARGE]
+-->
+    [ngs-create-goal-in-place <goalpool> AchieveEngageEnemy $NGS_GB_ACHIEVE <g> <supergoal> "threat <threat>"]"
+
+################################################################################
+#         Threat directly ahead. FIRE!
+################################################################################
+
+sp "engage*fire-missile
+    [ngs-match-goal <s> AchieveEngageEnemy <g>]
+    [ngs-bind <g> threat.position:center]
+-->
+    [ngs-create-typed-object <g> output-command OutputCommand <cmd> "fire <fire>"]
+    [ngs-create-attribute <fire> weapon missile]"
+
+################################################################################
+#         Threat is on the side. Slide over so we can fire.
+################################################################################
+
+sp "engage*slide-over
+    [ngs-match-goal <s> AchieveEngageEnemy <g>]
+    [ngs-bind <g> threat]
+    [ngs-input-link <s> <il> blocked.<dir>:no]
+    [ngs-eq <threat> position "{[ngs-anyof left right] <dir>}"]
+-->
+    [ngs-create-typed-object <g> output-command OutputCommand <cmd> "move <move>"]
+    [ngs-create-attribute <move> direction <dir>]"
+
+################################################################################
+#         Threat is on the side, but we can't slide over. Move forward.
+################################################################################
+
+sp "engage*advance
+    [ngs-match-goal <s> AchieveEngageEnemy <g>]
+    [ngs-bind <g> threat]
+    [ngs-neq <threat> distance 0]
+    [ngs-input-link <s> <il> blocked.<dir>:yes]
+    [ngs-eq <threat> position "{[ngs-anyof left right] <dir>}"]
+-->
+    [ngs-create-typed-object <g> output-command OutputCommand <cmd> "move <move>"]
+    [ngs-create-attribute <move> direction forward]"
+
+################################################################################
+#         Threat is on the side, right next to us. Turn toward it and FIRE.
+################################################################################
+
+sp "engage*turn
+    [ngs-match-goal <s> AchieveEngageEnemy <g>]
+    [ngs-bind <g> threat.distance:0]
+    [ngs-eq <threat> position "{[ngs-anyof left right] <dir>}"]
+-->
+    [ngs-create-typed-object <g> output-command OutputCommand <cmd> "rotate <rotate> fire <fire>"]
+    [ngs-create-attribute <rotate> direction <dir>]
+    [ngs-create-attribute <fire> weapon missile]"
+
+################################################################################
+#         Once we have an output command, assign the goal to the decision
+################################################################################
+
+# A better way to do this would be to match to AchieveManeuver goal type instead
+# of AchieveEngageEnemy since we're doing the same thing for AchieveSearch and 
+# AcheiveRunAway. We use 3 explicit productions simply to make it easier for the
+# reader to understand what we're trying to do with the decision structure.
+
+sp "engage*assign-decision
+    [ngs-match-goal <s> AchieveEngageEnemy <g>]
+    [ngs-bind <g> output-command]
+-->
+    [ngs-assign-decision <g> $TS_DECISION_MANEUVER]"

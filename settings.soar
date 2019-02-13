@@ -1,0 +1,10 @@
+################################################################################
+# settings.soar                                                                #
+#                                                                              #
+# The following two commands are required to get TCL support working for NGS-4 #
+#                                                                              #
+################################################################################
+
+soar tcl on
+cli tcl on
+

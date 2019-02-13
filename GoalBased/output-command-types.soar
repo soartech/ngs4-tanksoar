@@ -1,0 +1,24 @@
+##!
+# @file
+#
+# @created timothysaucer 20190212
+
+# From the manual:
+#
+#  ^io
+#    ^output-link
+#      ^move.direction left/right/forward/backward/none
+#      ^rotate.direction left/right
+#      ^fire.weapon missile
+#      ^radar.switch on/off
+#      ^radar-power.setting 1-14
+#      ^shields.switch on/off
+
+NGS_DeclareType OutputCommand {
+    move ""
+    rotate ""
+    fire ""
+    radar ""
+    radar-power ""
+    shields ""
+}

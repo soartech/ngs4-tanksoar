@@ -1,0 +1,106 @@
+##!
+# @file
+#
+# @created timothysaucer 20190212
+
+################################################################################
+#        Create the maneuver goal for searching
+################################################################################
+
+sp "goal-search*create
+    [ngs-match-goal-to-create-subgoal <s> $TS_DECISION_MANEUVER <supergoal> AchieveSearch <goalpool>]
+-->
+    [ngs-create-goal-in-place <goalpool> AchieveSearch $NGS_GB_ACHIEVE <g> <supergoal>]"
+
+################################################################################
+#         Move forward if you can
+################################################################################
+
+sp "goal-search*move-forward
+    [ngs-match-goal <s> AchieveSearch <g>]
+    [ngs-input-link <s> <il> blocked.forward:no]
+-->
+    [ngs-create-typed-object <g> output-command OutputCommand <cmd> "move <move>"]
+    [ngs-create-attribute <move> direction forward]"
+
+################################################################################
+#        If we need to turn left/right figure out which way to go 
+#        by creating a new decision.
+################################################################################
+
+# Step 1: Request decision
+sp "goal-search*turn-direction*decision
+    [ngs-match-goal <s> AchieveSearch <g>]
+    [ngs-input-link <s> <il> blocked]
+    [ngs-bind <il> blocked.forward:yes]
+-->
+    [ngs-irequest-decision <g> $TS_DECISION_TURN_DIRECTION <g> turn-direction]"
+
+# Step 2: Create goals that satisfy decision
+# Step 3: Assign goals to decision
+ngs-declare-tsp goal-search*turn-direction*turn "
+    [ngs-match-goal-to-create-subgoal <s> $TS_DECISION_TURN_DIRECTION <supergoal> AchieveTurnDirection <goalpool>]
+    [ngs-input-link <s> <il> blocked.%direction:no]
+-->
+    [ngs-create-goal-in-place <goalpool> AchieveTurnDirection $NGS_GB_ACHIEVE <g> <supergoal> "direction %direction"]
+    [ngs-assign-decision <g> $TS_DECISION_TURN_DIRECTION $NGS_NO]"
+
+ngs-expand-tsp goal-search*turn-direction*turn "
+    { %direction left  }
+    { %direction right }"
+
+# Step 4: Make a choice about the decision
+# These productions could be generalized - we could create a tag that says to pick a choice
+# randomly and do that selection in the substate. This is simpler and hopefully gets across
+# the idea of how to make a choice for a decision.
+sp "goal-search*select-left-randomly
+    [ngs-match-to-make-choice <ss> $TS_DECISION_TURN_DIRECTION <g> AchieveSearch "" <s>]
+    [ngs-input-link <s> <il>]
+    [ngs-is-decision-choice <ss> <any-choice>]
+    [ngs-bind <any-choice> direction:left]
+    [ngs-gt <il> random 0.5]
+-->
+    [ngs-make-choice-by-operator <ss> <any-choice>]"
+
+sp "goal-search*select-right-randomly
+    [ngs-match-to-make-choice <ss> $TS_DECISION_TURN_DIRECTION <g> AchieveSearch "" <s>]
+    [ngs-input-link <s> <il>]
+    [ngs-is-decision-choice <ss> <any-choice>]
+    [ngs-bind <any-choice> direction:right]
+    [ngs-lte <il> random 0.5]
+-->
+    [ngs-make-choice-by-operator <ss> <any-choice>]"
+
+# Step 5: Do something with the result
+sp "goal-search*turn-towards-open
+    [ngs-match-selected-goal <s> AchieveTurnDirection <g>]
+    [ngs-bind <g> direction]
+    [ngs-is-supergoal <g> <supergoal>]
+-->    
+    [ngs-create-typed-object <supergoal> output-command OutputCommand <cmd> "rotate <rotate> radar <radar> radar-power <radar-power>"]
+    [ngs-create-attribute <rotate> direction <direction>]
+    [ngs-create-attribute <radar> switch on]
+    [ngs-create-attribute <radar-power> setting 13]"
+
+################################################################################
+#        If forward, left, and right are all blocked, turn left (so 
+#        in the next step you turn left again)
+################################################################################
+
+sp "goal-search*turn-around
+    [ngs-match-goal <s> AchieveSearch <g>]
+    [ngs-input-link <s> <il> blocked]
+    [ngs-bind <blocked> forward:yes left:yes right:yes]
+-->
+    [ngs-create-typed-object <g> output-command OutputCommand <cmd> "rotate <rotate>"]
+    [ngs-create-attribute <rotate> direction left]"
+
+################################################################################
+#        Assign the search goal to the maneuver decision
+################################################################################
+
+sp "goal-search*assign-decision
+    [ngs-match-goal <s> AchieveSearch <g>]
+    [ngs-bind <g> output-command]
+-->
+    [ngs-assign-decision <g> $TS_DECISION_MANEUVER]"
