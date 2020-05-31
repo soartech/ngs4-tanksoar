@@ -1,0 +1,13 @@
+{
+    "entryPoints": [
+        {
+            "name": "wander",
+            "path": "Wander/load.soar"
+        },
+        {
+            "name": "goalbased",
+            "path": "GoalBased/load.soar"
+        }
+    ],
+    "active": "goalbased"
+}
